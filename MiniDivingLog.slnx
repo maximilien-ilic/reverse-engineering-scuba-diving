@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MiniDivingLog.Core/MiniDivingLog.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MiniDivingLog.Tests/MiniDivingLog.Tests.csproj" />
+  </Folder>
+</Solution>

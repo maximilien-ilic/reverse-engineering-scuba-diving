@@ -16,5 +16,16 @@ existante, puis en recoder une version à nous, de zéro.
 
 ## Organisation
 
-- `docs/` : notes d'analyse, une fiche par fonctionnalité étudiée.
-- `src/` : notre propre code (à venir).
+- `docs/` : notes d'analyse, une fiche par étape (01 installateur, 02 architecture…).
+- `src/MiniDivingLog.Core/` : notre propre code en C# (.NET 10).
+  - `Carnet/` : le modèle de données (`Plongee`, `Bloc`).
+  - `Calculs/` : Nitrox (MOD, EAD, END) et consommation (SAC).
+- `tests/MiniDivingLog.Tests/` : les tests xUnit.
+
+## Lancer les tests
+
+Sur Arch : `sudo pacman -S dotnet-sdk`, puis à la racine du repo :
+
+```
+dotnet test
+```
