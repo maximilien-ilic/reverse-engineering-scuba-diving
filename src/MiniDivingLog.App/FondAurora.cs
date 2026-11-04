@@ -6,35 +6,28 @@ using Avalonia.Platform;
 
 namespace MiniDivingLog.App;
 
-/// <summary>Une « tache » de couleur du fond aurora.</summary>
+/// <summary>Une « tache » de couleur du fond.</summary>
 /// <param name="X">Position du centre, en fraction de la largeur (0 à 1).</param>
 /// <param name="Y">Position du centre, en fraction de la hauteur (0 à 1).</param>
 /// <param name="Rayon">Rayon, en fraction de la plus grande dimension.</param>
-/// <param name="Periode">Durée d'un aller-retour de la dérive, en secondes.</param>
-public record TacheAurora(Color Couleur, double X, double Y, double Rayon, double Periode);
+/// <param name="Opacite">Opacité au centre de la tache, de 0 à 255.</param>
+public record TacheAurora(Color Couleur, double X, double Y, double Rayon, byte Opacite);
 
 /// <summary>
-/// Fond « aurora » recréé à la main, sans WebGL : quelques grandes taches de couleur très floues
-/// qui dérivent et respirent lentement, plus un léger grain qui casse les dégradés en escalier.
+/// Fond « aurora » fixe, dessiné à la main en trois couches :
+/// 1. un dégradé en diagonale, du bleu abyssal (en haut à gauche) au bleu lagon (en bas à droite) ;
+/// 2. de grandes taches floues, claires et foncées, qui cassent l'uniformité ;
+/// 3. quelques rayons de lumière qui tombent de la surface, et un léger grain.
 ///
 /// Le flou est obtenu avec des dégradés radiaux qui vont de la couleur au transparent :
 /// c'est bien moins coûteux qu'un vrai filtre de flou, et le rendu est le même.
+/// Rien ne bouge : le fond n'est redessiné que quand la fenêtre change de taille.
 /// On le place en premier dans un Panel : les contrôles suivants s'affichent par-dessus.
 /// </summary>
 public class FondAurora : Control
 {
-    public static readonly StyledProperty<bool> AnimeProperty =
-        AvaloniaProperty.Register<FondAurora, bool>(nameof(Anime), defaultValue: true);
-
     public static readonly StyledProperty<double> GrainProperty =
-        AvaloniaProperty.Register<FondAurora, double>(nameof(Grain), defaultValue: 0.06);
-
-    /// <summary>false = les taches restent immobiles (pour ceux que le mouvement gêne).</summary>
-    public bool Anime
-    {
-        get => GetValue(AnimeProperty);
-        set => SetValue(AnimeProperty, value);
-    }
+        AvaloniaProperty.Register<FondAurora, double>(nameof(Grain), defaultValue: 0.05);
 
     /// <summary>Opacité du grain, de 0 (aucun) à 1.</summary>
     public double Grain
@@ -43,79 +36,91 @@ public class FondAurora : Control
         set => SetValue(GrainProperty, value);
     }
 
-    /// <summary>Les taches : des bleus clairs et foncés, comme l'eau vue de dessous.</summary>
+    /// <summary>Couche 1 : du plus profond au plus clair, en diagonale.</summary>
+    private static readonly IBrush Degrade = new LinearGradientBrush
+    {
+        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+        EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
+        GradientStops =
+        {
+            new GradientStop(Color.Parse("#031B3D"), 0.00),  // bleu abyssal
+            new GradientStop(Color.Parse("#0B3D91"), 0.30),  // bleu nuit
+            new GradientStop(Color.Parse("#1565C0"), 0.55),  // bleu franc
+            new GradientStop(Color.Parse("#29B6F6"), 0.85),  // bleu ciel
+            new GradientStop(Color.Parse("#B3E5FC"), 1.00),  // bleu lagon très clair
+        },
+    };
+
+    /// <summary>Couche 2 : les taches, des bleus clairs et foncés, comme l'eau vue de dessous.</summary>
     public List<TacheAurora> Taches { get; } =
     [
-        new(Color.Parse("#0D47A1"), 0.15, 0.20, 0.55, 46),
-        new(Color.Parse("#1E88E5"), 0.80, 0.15, 0.50, 38),
-        new(Color.Parse("#4FC3F7"), 0.55, 0.75, 0.45, 52),
-        new(Color.Parse("#81D4FA"), 0.10, 0.85, 0.40, 41),
-        new(Color.Parse("#01579B"), 0.90, 0.80, 0.50, 57),
+        new(Color.Parse("#4FC3F7"), 0.88, 0.08, 0.45, 190),  // halo clair en haut à droite
+        new(Color.Parse("#010E24"), 0.02, 0.95, 0.55, 220),  // fosse sombre en bas à gauche
+        new(Color.Parse("#1E88E5"), 0.40, 0.30, 0.35, 140),  // bleu vif au centre-haut
+        new(Color.Parse("#81D4FA"), 0.70, 0.70, 0.30, 150),  // reflet clair au centre-bas
+        new(Color.Parse("#0D47A1"), 0.98, 0.55, 0.30, 170),  // bleu profond à droite
+        new(Color.Parse("#E1F5FE"), 1.00, 1.00, 0.25, 200),  // presque blanc dans le coin
     ];
 
-    private static readonly IBrush CouleurDeFond = new SolidColorBrush(Color.Parse("#E3F2FD"));
-    private readonly DateTime _depart = DateTime.Now;
+    /// <summary>Couche 3 : les rayons de lumière (position du haut, en fraction de la largeur, et largeur).</summary>
+    private static readonly (double X, double Largeur)[] Rayons = [(0.30, 0.06), (0.48, 0.10), (0.72, 0.05)];
+
     private WriteableBitmap? _grain;
 
     static FondAurora()
     {
-        AffectsRender<FondAurora>(AnimeProperty, GrainProperty);
+        AffectsRender<FondAurora>(GrainProperty);
         IsHitTestVisibleProperty.OverrideDefaultValue<FondAurora>(false);  // les clics passent au travers
-    }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        DemanderImageSuivante();
-    }
-
-    private void DemanderImageSuivante()
-    {
-        // À chaque image affichée par l'écran, on redessine : c'est ce qui fait bouger les taches.
-        if (Anime && TopLevel.GetTopLevel(this) is { } fenetre)
-            fenetre.RequestAnimationFrame(_ =>
-            {
-                InvalidateVisual();
-                DemanderImageSuivante();
-            });
-    }
-
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == AnimeProperty && Anime)
-            DemanderImageSuivante();
     }
 
     public override void Render(DrawingContext ctx)
     {
         var zone = new Rect(Bounds.Size);
-        ctx.FillRectangle(CouleurDeFond, zone);
-
-        double t = Anime ? (DateTime.Now - _depart).TotalSeconds : 0;
         double grand = Math.Max(zone.Width, zone.Height);
 
+        // 1. Le dégradé de base.
+        ctx.FillRectangle(Degrade, zone);
+
+        // 2. Les taches floues.
         foreach (var tache in Taches)
         {
-            // Dérive lente : un petit mouvement circulaire, différent pour chaque tache,
-            // et une « respiration » de la taille (± 12 %).
-            double angle = 2 * Math.PI * t / tache.Periode;
-            double cx = (tache.X + 0.08 * Math.Sin(angle)) * zone.Width;
-            double cy = (tache.Y + 0.06 * Math.Cos(angle * 0.8)) * zone.Height;
-            double rayon = tache.Rayon * grand * (1 + 0.12 * Math.Sin(angle * 1.3));
-
+            var c = tache.Couleur;
             var degrade = new RadialGradientBrush
             {
                 GradientStops =
                 {
-                    new GradientStop(Color.FromArgb(150, tache.Couleur.R, tache.Couleur.G, tache.Couleur.B), 0),
-                    new GradientStop(Color.FromArgb(60, tache.Couleur.R, tache.Couleur.G, tache.Couleur.B), 0.5),
-                    new GradientStop(Color.FromArgb(0, tache.Couleur.R, tache.Couleur.G, tache.Couleur.B), 1),
+                    new GradientStop(Color.FromArgb(tache.Opacite, c.R, c.G, c.B), 0),
+                    new GradientStop(Color.FromArgb((byte)(tache.Opacite * 0.45), c.R, c.G, c.B), 0.5),
+                    new GradientStop(Color.FromArgb(0, c.R, c.G, c.B), 1),
                 },
             };
-            ctx.DrawEllipse(degrade, null, new Point(cx, cy), rayon, rayon);
+            double rayon = tache.Rayon * grand;
+            ctx.DrawEllipse(degrade, null, new Point(tache.X * zone.Width, tache.Y * zone.Height), rayon, rayon);
         }
 
+        // 3a. Les rayons : des bandes inclinées, blanches en haut, qui s'effacent en descendant.
+        var lumiere = new LinearGradientBrush
+        {
+            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+            EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+            GradientStops =
+            {
+                new GradientStop(Color.FromArgb(36, 255, 255, 255), 0),
+                new GradientStop(Color.FromArgb(0, 255, 255, 255), 0.85),
+            },
+        };
+        foreach (var (x, largeur) in Rayons)
+        {
+            double haut = x * zone.Width, l = largeur * zone.Width, decalage = 0.25 * zone.Width;
+            var bande = new PolylineGeometry(
+            [
+                new Point(haut, 0), new Point(haut + l, 0),
+                new Point(haut + l * 2.5 - decalage, zone.Height), new Point(haut - decalage, zone.Height),
+            ], isFilled: true);
+            ctx.DrawGeometry(lumiere, null, bande);
+        }
+
+        // 3b. Le grain, qui évite les dégradés « en escalier ».
         if (Grain > 0)
         {
             _grain ??= CreerGrain(128);

@@ -24,7 +24,7 @@ existante, puis en recoder une version à nous, de zéro.
   - `Import/` : lecture des fichiers UDDF exportés par Diving Log, Subsurface…
   - `Stockage/` : le carnet enregistré dans un fichier SQLite (`CarnetSqlite`).
   - `Statistiques/` : records et moyennes du carnet (`StatistiquesCarnet`).
-- `src/MiniDivingLog.App/` : l'interface graphique (Avalonia), sur un fond « aurora » animé, avec trois onglets :
+- `src/MiniDivingLog.App/` : l'interface graphique (Avalonia), sur un fond bleu nuancé fixe et en police Poppins (licence SIL OFL, embarquée dans `Assets/Fonts`), avec trois onglets :
   - Carnet : liste des plongées, détails, profil dessiné, import UDDF, saisie et modification à la main ;
   - Planificateur : paliers de déco, limite sans palier et profil prévu ;
   - Activité : grille des plongées sur 12 mois (façon GitHub) et records.

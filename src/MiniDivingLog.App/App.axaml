@@ -2,17 +2,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="MiniDivingLog.App.App"
              RequestedThemeVariant="Light">
+  <Application.Resources>
+    <!-- Police de l'application (étape 10) : Poppins, embarquée dans Assets/Fonts.
+         Le thème Fluent lit cette ressource pour tous ses contrôles (boutons, champs, listes…). -->
+    <FontFamily x:Key="ContentControlThemeFontFamily">avares://MiniDivingLog.App/Assets/Fonts#Poppins</FontFamily>
+  </Application.Resources>
+
   <Application.Styles>
     <FluentTheme />
+
+    <!-- Les fenêtres aussi : tout ce qui n'est pas un contrôle Fluent (TextBlock, infobulles…) en hérite. -->
+    <Style Selector="Window">
+      <Setter Property="FontFamily" Value="{StaticResource ContentControlThemeFontFamily}" />
+    </Style>
+
+    <!-- Le grand titre de la fenêtre. -->
+    <Style Selector="TextBlock.titre">
+      <Setter Property="FontSize" Value="32" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="LetterSpacing" Value="0.5" />
+    </Style>
 
     <!-- Direction artistique (étape 9) : bleus de l'eau, boutons orange. -->
 
     <!-- Les cartes blanches translucides posées sur le fond aurora. -->
     <Style Selector="Border.carte">
-      <Setter Property="Background" Value="#E6FFFFFF" />
+      <Setter Property="Background" Value="#EBFFFFFF" />
       <Setter Property="CornerRadius" Value="12" />
       <Setter Property="Padding" Value="16" />
-      <Setter Property="BoxShadow" Value="0 8 24 0 #400D47A1" />
+      <Setter Property="BoxShadow" Value="0 10 30 0 #66031B3D" />
     </Style>
 
     <!-- Boutons orange. -->
@@ -45,8 +64,9 @@
 
     <!-- Onglets : texte blanc sur le fond, souligné orange quand sélectionné. -->
     <Style Selector="TabControl.onglets > TabItem">
-      <Setter Property="Foreground" Value="#E3F2FD" />
+      <Setter Property="Foreground" Value="#B3E5FC" />
       <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style Selector="TabControl.onglets > TabItem:selected">
       <Setter Property="Foreground" Value="White" />

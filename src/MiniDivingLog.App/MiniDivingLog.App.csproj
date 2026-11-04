@@ -12,6 +12,11 @@
     <ProjectReference Include="..\MiniDivingLog.Core\MiniDivingLog.Core.csproj" />
   </ItemGroup>
 
+  <!-- La police Poppins (licence SIL OFL, voir Assets/Fonts/OFL.txt) est embarquée dans l'exécutable. -->
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.5" />
     <PackageReference Include="Avalonia.Desktop" Version="12.1.5" />

@@ -6,11 +6,10 @@
         Title="Mini Diving Log" Width="1040" Height="720">
 
   <Panel>
-  <!-- Le fond aurora (étape 9) : premier enfant du Panel, tout le reste s'affiche par-dessus. -->
+  <!-- Le fond bleu nuancé (étapes 9 et 10) : premier enfant du Panel, tout le reste s'affiche par-dessus. -->
   <app:FondAurora />
-  <DockPanel Margin="16">
-  <TextBlock DockPanel.Dock="Top" Text="Mini Diving Log" FontSize="26" FontWeight="Bold"
-             Foreground="White" Margin="4,0,0,8" />
+  <DockPanel Margin="24,16,24,24">
+  <TextBlock DockPanel.Dock="Top" Classes="titre" Text="Mini Diving Log" Margin="4,0,0,4" />
 
   <TabControl x:Name="Onglets" Classes="onglets">
 
