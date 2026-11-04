@@ -47,6 +47,14 @@ public sealed class CarnetSqlite : IDisposable
                 FractionO2        REAL    NOT NULL,
                 FractionHe        REAL    NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS PointsProfil (
+                PlongeeId     INTEGER NOT NULL REFERENCES Plongees(Id) ON DELETE CASCADE,
+                TempsS        REAL    NOT NULL,
+                ProfondeurM   REAL    NOT NULL,
+                TemperatureC  REAL,
+                PRIMARY KEY (PlongeeId, TempsS)
+            );
             """);
     }
 
@@ -108,16 +116,66 @@ public sealed class CarnetSqlite : IDisposable
     }
 
     /// <summary>La plongée portant ce numéro, ou null.</summary>
-    public Plongee? Trouver(int numero)
+    public Plongee? Trouver(int numero) => IdDe(numero) is long id ? Charger(id) : null;
+
+    private long? IdDe(int numero)
     {
         var cmd = _connexion.CreateCommand();
         cmd.CommandText = "SELECT Id FROM Plongees WHERE Numero = $numero;";
         cmd.Parameters.AddWithValue("$numero", numero);
-        object? id = cmd.ExecuteScalar();
-        return id is null ? null : Charger((long)id);
+        return cmd.ExecuteScalar() as long?;
     }
 
-    /// <summary>Supprime une plongée (ses blocs partent avec, grâce à ON DELETE CASCADE).</summary>
+    /// <summary>Enregistre (ou remplace) le profil d'une plongée déjà présente dans le carnet.</summary>
+    public void EnregistrerProfil(int numero, Profil profil)
+    {
+        long id = IdDe(numero) ?? throw new KeyNotFoundException($"Pas de plongée n°{numero} dans le carnet.");
+        using var transaction = _connexion.BeginTransaction();
+
+        var effacer = _connexion.CreateCommand();
+        effacer.CommandText = "DELETE FROM PointsProfil WHERE PlongeeId = $id;";
+        effacer.Parameters.AddWithValue("$id", id);
+        effacer.ExecuteNonQuery();
+
+        // Une seule commande préparée, réutilisée pour chaque point : beaucoup plus rapide.
+        var cmd = _connexion.CreateCommand();
+        cmd.CommandText = "INSERT INTO PointsProfil (PlongeeId, TempsS, ProfondeurM, TemperatureC) VALUES ($id, $t, $p, $temp);";
+        cmd.Parameters.AddWithValue("$id", id);
+        var t = cmd.Parameters.Add("$t", SqliteType.Real);
+        var prof = cmd.Parameters.Add("$p", SqliteType.Real);
+        var temp = cmd.Parameters.Add("$temp", SqliteType.Real);
+
+        foreach (PointProfil point in profil.Points)
+        {
+            t.Value = point.Temps.TotalSeconds;
+            prof.Value = point.ProfondeurM;
+            temp.Value = (object?)point.TemperatureC ?? DBNull.Value;
+            cmd.ExecuteNonQuery();
+        }
+
+        transaction.Commit();
+    }
+
+    /// <summary>Le profil d'une plongée, ou null si elle n'en a pas.</summary>
+    public Profil? ChargerProfil(int numero)
+    {
+        if (IdDe(numero) is not long id)
+            return null;
+
+        var cmd = _connexion.CreateCommand();
+        cmd.CommandText = "SELECT TempsS, ProfondeurM, TemperatureC FROM PointsProfil WHERE PlongeeId = $id ORDER BY TempsS;";
+        cmd.Parameters.AddWithValue("$id", id);
+
+        var points = new List<PointProfil>();
+        using var l = cmd.ExecuteReader();
+        while (l.Read())
+            points.Add(new PointProfil(TimeSpan.FromSeconds(l.GetDouble(0)), l.GetDouble(1),
+                                       l.IsDBNull(2) ? null : l.GetDouble(2)));
+
+        return points.Count == 0 ? null : new Profil(points);
+    }
+
+    /// <summary>Supprime une plongée (ses blocs et son profil partent avec, grâce à ON DELETE CASCADE).</summary>
     public bool Supprimer(int numero)
     {
         var cmd = _connexion.CreateCommand();

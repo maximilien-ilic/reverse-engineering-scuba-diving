@@ -99,4 +99,34 @@ public class CarnetSqliteTests
             File.Delete(fichier);
         }
     }
+
+    [Fact]
+    public void Profil_EnregistrePuisRecharge()
+    {
+        using var carnet = new CarnetSqlite(":memory:");
+        carnet.Ajouter(Exemple(1));
+        var profil = new Profil([
+            new PointProfil(TimeSpan.Zero, 0, 21),
+            new PointProfil(TimeSpan.FromMinutes(2), 20),
+            new PointProfil(TimeSpan.FromMinutes(25), 0, 20),
+        ]);
+
+        carnet.EnregistrerProfil(1, profil);
+        Profil? relu = carnet.ChargerProfil(1);
+
+        Assert.NotNull(relu);
+        Assert.Equal(profil.Points, relu.Points);
+    }
+
+    [Fact]
+    public void Profil_AbsentOuPlongeeInconnue_DonneNull()
+    {
+        using var carnet = new CarnetSqlite(":memory:");
+        carnet.Ajouter(Exemple(1));
+
+        Assert.Null(carnet.ChargerProfil(1));
+        Assert.Null(carnet.ChargerProfil(99));
+        Assert.Throws<KeyNotFoundException>(() =>
+            carnet.EnregistrerProfil(99, new Profil([new PointProfil(TimeSpan.Zero, 0)])));
+    }
 }

@@ -24,6 +24,7 @@ existante, puis en recoder une version à nous, de zéro.
   - `Import/` : lecture des fichiers UDDF exportés par Diving Log, Subsurface…
   - `Stockage/` : le carnet enregistré dans un fichier SQLite (`CarnetSqlite`).
   - `Statistiques/` : records et moyennes du carnet (`StatistiquesCarnet`).
+- `src/MiniDivingLog.App/` : l'interface graphique (Avalonia) : liste des plongées, détails, profil dessiné, import UDDF.
 - `tests/MiniDivingLog.Tests/` : les tests xUnit.
 
 > ⚠️ **Projet d'apprentissage.** Les calculs de décompression ne sont pas validés :
@@ -36,3 +37,12 @@ Sur Arch : `sudo pacman -S dotnet-sdk`, puis à la racine du repo :
 ```
 dotnet test
 ```
+
+## Lancer l'application
+
+```
+dotnet run --project src/MiniDivingLog.App
+```
+
+Le carnet est enregistré dans `~/.local/share/MiniDivingLog/carnet.db`.
+Pour essayer, importe `tests/MiniDivingLog.Tests/Exemples/carnet.uddf`.
