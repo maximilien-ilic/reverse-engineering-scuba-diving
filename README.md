@@ -20,9 +20,13 @@ existante, puis en recoder une version à nous, de zéro.
 - `src/MiniDivingLog.Core/` : notre propre code en C# (.NET 10).
   - `Carnet/` : le modèle de données (`Plongee`, `Bloc`, `Profil`).
   - `Calculs/` : Nitrox (MOD, EAD, END) et consommation (SAC).
+  - `Calculs/Deco/` : planificateur de décompression Bühlmann ZH-L16C avec facteurs de gradient.
   - `Stockage/` : le carnet enregistré dans un fichier SQLite (`CarnetSqlite`).
   - `Statistiques/` : records et moyennes du carnet (`StatistiquesCarnet`).
 - `tests/MiniDivingLog.Tests/` : les tests xUnit.
+
+> ⚠️ **Projet d'apprentissage.** Les calculs de décompression ne sont pas validés :
+> ne jamais s'en servir pour préparer une vraie plongée.
 
 ## Lancer les tests
 
