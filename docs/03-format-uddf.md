@@ -54,3 +54,19 @@ Deux pièges :
 compare les noms **locaux** des balises (pour accepter les versions 3.0, 3.1, 3.2,
 qui changent d'espace de noms), convertit les unités et, s'il manque des infos
 (durée, profondeur moyenne…), les recalcule à partir du profil.
+
+## Test sur de vrais fichiers
+
+On a passé notre import sur les 7 fichiers UDDF de la suite de tests de Subsurface
+(exports de Subsurface et d'AP DiveSight, plongées recycleur, 3 versions de
+l'espace de noms). Ces fichiers ne sont pas copiés dans le repo (ils appartiennent
+au projet Subsurface, sous licence GPL). Deux problèmes trouvés et corrigés :
+
+1. **Plongée « fantôme »** : AP DiveSight commence son export par une plongée vide
+   qui ne contient que l'intervalle surface. On ignore les plongées sans date.
+2. **Échantillons pas propres** : plusieurs points au même instant, et un point qui
+   recule d'une seconde. On trie les points par temps et on n'en garde qu'un par instant.
+
+Résultat : les 7 fichiers s'importent, dont une plongée de 104 min à 60 m avec
+688 points de profil. Leçon : un format « standard » n'est jamais appliqué de la
+même façon par tous les logiciels.

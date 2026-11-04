@@ -46,6 +46,11 @@ public static class ImportUddf
             XElement? avant = Enfant(plongee, "informationbeforedive");
             XElement? apres = Enfant(plongee, "informationafterdive");
 
+            // Certains logiciels (AP DiveSight par exemple) ajoutent une « plongée précédente »
+            // vide, qui ne contient que l'intervalle surface : on l'ignore.
+            if (Texte(avant, "datetime") is null)
+                continue;
+
             string? refSite = Liens(avant).FirstOrDefault(sites.ContainsKey);
             Profil? profil = LireProfil(plongee);
 
@@ -56,8 +61,7 @@ public static class ImportUddf
             var p = new Plongee
             {
                 Numero = (int?)Nombre(avant, "divenumber") ?? numeroParDefaut,
-                Date = DateTime.Parse(Texte(avant, "datetime") ?? throw new FormatException("Plongée sans <datetime>."),
-                                      CultureInfo.InvariantCulture),
+                Date = DateTime.Parse(Texte(avant, "datetime")!, CultureInfo.InvariantCulture),
                 Lieu = refSite is null ? "" : sites[refSite],
                 DureeMin = dureeMin,
                 ProfondeurMaxM = Nombre(apres, "greatestdepth") ?? profil?.ProfondeurMax ?? 0,
@@ -96,6 +100,10 @@ public static class ImportUddf
                 TimeSpan.FromSeconds(Nombre(w, "divetime")!.Value),
                 Nombre(w, "depth")!.Value,
                 KelvinVersCelsius(Nombre(w, "temperature"))))
+            // Les vrais fichiers ne sont pas toujours propres : on remet les points dans
+            // l'ordre du temps et on ne garde qu'un point par instant.
+            .OrderBy(p => p.Temps)
+            .DistinctBy(p => p.Temps)
             .ToList();
 
         return points.Count == 0 ? null : new Profil(points);

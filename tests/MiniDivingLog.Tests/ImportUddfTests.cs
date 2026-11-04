@@ -78,4 +78,50 @@ public class ImportUddfTests
     [Fact]
     public void PasUnFichierUddf_EstRefuse() =>
         Assert.Throws<FormatException>(() => ImportUddf.LireTexte("<carnet/>"));
+
+    [Fact]
+    public void PlongeeSansDate_EstIgnoree()
+    {
+        // Cas réel : l'export d'AP DiveSight commence par une plongée vide
+        // qui ne contient que l'intervalle surface.
+        const string xml = """
+            <uddf xmlns="http://www.streit.cc/uddf/3.2/" version="3.2.0">
+              <profiledata><repetitiongroup id="rg">
+                <dive id="precedente">
+                  <informationbeforedive><surfaceintervalbeforedive><infinity/></surfaceintervalbeforedive></informationbeforedive>
+                </dive>
+                <dive id="vraie">
+                  <informationbeforedive><divenumber>942</divenumber><datetime>2022-04-24T10:30:58</datetime></informationbeforedive>
+                  <informationafterdive><greatestdepth>18</greatestdepth><diveduration>2400</diveduration></informationafterdive>
+                </dive>
+              </repetitiongroup></profiledata>
+            </uddf>
+            """;
+
+        var (p, _) = Assert.Single(ImportUddf.LireTexte(xml));
+        Assert.Equal(942, p.Numero);
+        Assert.Equal(40, p.DureeMin, 6);
+    }
+
+    [Fact]
+    public void PointsEnDoubleOuDansLeDesordre_SontRemisEnOrdre()
+    {
+        // Cas réel (AP DiveSight) : deux échantillons au même instant, et un qui recule d'une seconde.
+        const string xml = """
+            <uddf><profiledata><repetitiongroup><dive>
+              <informationbeforedive><datetime>2022-04-24T10:30:58</datetime></informationbeforedive>
+              <samples>
+                <waypoint><depth>0</depth><divetime>0</divetime></waypoint>
+                <waypoint><depth>1.2</depth><divetime>0</divetime></waypoint>
+                <waypoint><depth>10</depth><divetime>60</divetime></waypoint>
+                <waypoint><depth>9</depth><divetime>59</divetime></waypoint>
+                <waypoint><depth>0</depth><divetime>120</divetime></waypoint>
+              </samples>
+            </dive></repetitiongroup></profiledata></uddf>
+            """;
+
+        var (_, profil) = Assert.Single(ImportUddf.LireTexte(xml));
+
+        Assert.Equal([0, 59, 60, 120], profil!.Points.Select(p => p.Temps.TotalSeconds));
+    }
 }
