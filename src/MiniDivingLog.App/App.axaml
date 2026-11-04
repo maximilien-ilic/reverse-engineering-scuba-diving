@@ -1,8 +1,58 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="MiniDivingLog.App.App"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Light">
   <Application.Styles>
     <FluentTheme />
+
+    <!-- Direction artistique (étape 9) : bleus de l'eau, boutons orange. -->
+
+    <!-- Les cartes blanches translucides posées sur le fond aurora. -->
+    <Style Selector="Border.carte">
+      <Setter Property="Background" Value="#E6FFFFFF" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="16" />
+      <Setter Property="BoxShadow" Value="0 8 24 0 #400D47A1" />
+    </Style>
+
+    <!-- Boutons orange. -->
+    <Style Selector="Button">
+      <Setter Property="Background" Value="#F57C00" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Padding" Value="14,7" />
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FB8C00" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#E65100" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <!-- Bouton secondaire (Annuler) : orange en contour. -->
+    <Style Selector="Button.secondaire">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#E65100" />
+      <Setter Property="BorderBrush" Value="#F57C00" />
+      <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+    <Style Selector="Button.secondaire:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FFF3E0" />
+      <Setter Property="Foreground" Value="#E65100" />
+    </Style>
+
+    <!-- Onglets : texte blanc sur le fond, souligné orange quand sélectionné. -->
+    <Style Selector="TabControl.onglets > TabItem">
+      <Setter Property="Foreground" Value="#E3F2FD" />
+      <Setter Property="FontSize" Value="18" />
+    </Style>
+    <Style Selector="TabControl.onglets > TabItem:selected">
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="TabControl.onglets > TabItem:selected /template/ Border#PART_SelectedPipe">
+      <Setter Property="Background" Value="#FF9800" />
+    </Style>
   </Application.Styles>
 </Application>

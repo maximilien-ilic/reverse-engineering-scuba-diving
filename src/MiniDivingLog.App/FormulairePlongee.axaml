@@ -74,8 +74,8 @@
     <!-- Erreurs de validation et boutons -->
     <TextBlock x:Name="Erreurs" Foreground="#C62828" TextWrapping="Wrap" IsVisible="False" />
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button Content="Annuler" Click="Annuler_Click" />
-      <Button Content="Enregistrer" Click="Enregistrer_Click" Classes="accent" IsDefault="True" />
+      <Button Content="Annuler" Click="Annuler_Click" Classes="secondaire" />
+      <Button Content="Enregistrer" Click="Enregistrer_Click" IsDefault="True" />
     </StackPanel>
   </StackPanel>
 </Window>

@@ -46,12 +46,23 @@ public partial class MainWindow : Window
         ListePlongees.SelectedItem =
             plongees.FirstOrDefault(p => p.Numero == numeroASelectionner) ?? plongees.LastOrDefault();
 
+        Grille.Afficher(new ActiviteAnnuelle(plongees, DateOnly.FromDateTime(DateTime.Today)));
+
         var s = new StatistiquesCarnet(plongees);
         Stats.Text = s.Nombre == 0
             ? "Carnet vide : importe un fichier UDDF pour commencer."
             : $"{s.Nombre} plongées · {s.TempsTotal.TotalHours:0.#} h sous l'eau · " +
               $"record : {s.ProfondeurMax!.Valeur:0.#} m (n°{s.ProfondeurMax.NumeroPlongee}) · " +
               (s.SacMoyen is double sac ? $"SAC moyen {sac:0.0} L/min" : "SAC moyen : —");
+
+        StatsDetaillees.Text = s.Nombre == 0 ? "" : string.Join(Environment.NewLine, new[]
+        {
+            $"Première plongée : {s.Premiere!.Date:dd/MM/yyyy} · dernière : {s.Derniere!.Date:dd/MM/yyyy}",
+            $"Plus profonde : {s.ProfondeurMax!.Valeur:0.#} m (n°{s.ProfondeurMax.NumeroPlongee}) · " +
+            $"plus longue : {s.PlusLonguePlongee!.Valeur:0} min (n°{s.PlusLonguePlongee.NumeroPlongee})",
+            s.EauLaPlusFroide is { } froide ? $"Eau la plus froide : {froide.Valeur:0.#} °C (n°{froide.NumeroPlongee})" : "",
+            "Lieux : " + string.Join(", ", s.ParLieu().Take(5).Select(l => $"{(l.Lieu == "" ? "?" : l.Lieu)} ({l.Nombre})")),
+        }.Where(l => l != ""));
     }
 
     private void Liste_SelectionChanged(object? sender, SelectionChangedEventArgs e)

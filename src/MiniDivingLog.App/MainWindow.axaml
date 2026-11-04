@@ -3,32 +3,40 @@
         xmlns:app="using:MiniDivingLog.App"
         xmlns:carnet="using:MiniDivingLog.Core.Carnet"
         x:Class="MiniDivingLog.App.MainWindow"
-        Title="Mini Diving Log" Width="1000" Height="680">
+        Title="Mini Diving Log" Width="1040" Height="720">
 
-  <TabControl x:Name="Onglets">
+  <Panel>
+  <!-- Le fond aurora (étape 9) : premier enfant du Panel, tout le reste s'affiche par-dessus. -->
+  <app:FondAurora />
+  <DockPanel Margin="16">
+  <TextBlock DockPanel.Dock="Top" Text="Mini Diving Log" FontSize="26" FontWeight="Bold"
+             Foreground="White" Margin="4,0,0,8" />
+
+  <TabControl x:Name="Onglets" Classes="onglets">
 
     <!-- ===================== Onglet 1 : le carnet ===================== -->
     <TabItem Header="Carnet">
+      <Border Classes="carte" Padding="0">
       <DockPanel>
         <!-- Barre du haut : actions -->
-        <Border DockPanel.Dock="Top" Padding="8" Background="#0D47A1">
+        <Border DockPanel.Dock="Top" Padding="12">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <Button Content="Nouvelle plongée…" Click="Nouvelle_Click" />
             <Button x:Name="BoutonModifier" Content="Modifier…" Click="Modifier_Click" />
             <Button x:Name="BoutonImporter" Content="Importer un fichier UDDF…" Click="Importer_Click" />
             <Button x:Name="BoutonSupprimer" Content="Supprimer la plongée" Click="Supprimer_Click" />
-            <TextBlock x:Name="Message" Foreground="White" VerticalAlignment="Center" />
+            <TextBlock x:Name="Message" Foreground="#0D47A1" VerticalAlignment="Center" />
           </StackPanel>
         </Border>
 
         <!-- Barre du bas : statistiques du carnet (étape 3) -->
-        <Border DockPanel.Dock="Bottom" Padding="8" Background="#E3F2FD">
+        <Border DockPanel.Dock="Bottom" Padding="12,8" Background="#330D47A1" CornerRadius="0,0,12,12">
           <TextBlock x:Name="Stats" TextWrapping="Wrap" />
         </Border>
 
         <Grid ColumnDefinitions="300,*">
           <!-- Liste des plongées -->
-          <ListBox x:Name="ListePlongees" Grid.Column="0" SelectionChanged="Liste_SelectionChanged"
+          <ListBox x:Name="ListePlongees" Grid.Column="0" Background="Transparent" SelectionChanged="Liste_SelectionChanged"
                    DoubleTapped="Modifier_Click">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="carnet:Plongee">
@@ -50,11 +58,13 @@
           </DockPanel>
         </Grid>
       </DockPanel>
+      </Border>
     </TabItem>
 
     <!-- ============ Onglet 2 : le planificateur de déco (étape 4) ============ -->
     <TabItem Header="Planificateur">
-      <DockPanel Margin="12">
+      <Border Classes="carte">
+      <DockPanel>
         <!-- Les paramètres de la plongée -->
         <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal">
           <WrapPanel.Styles>
@@ -83,6 +93,22 @@
           <app:VueProfil x:Name="ProfilPlan" Grid.Column="1" MinHeight="250" />
         </Grid>
       </DockPanel>
+      </Border>
+    </TabItem>
+
+    <!-- ============ Onglet 3 : la grille d'activité (étape 9) ============ -->
+    <TabItem Header="Activité">
+      <Border Classes="carte">
+        <StackPanel Spacing="16">
+          <TextBlock Text="Tes plongées sur les 12 derniers mois" FontSize="18" FontWeight="Bold" />
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <app:GrilleActivite x:Name="Grille" />
+          </ScrollViewer>
+          <TextBlock x:Name="StatsDetaillees" TextWrapping="Wrap" LineHeight="22" />
+        </StackPanel>
+      </Border>
     </TabItem>
   </TabControl>
+  </DockPanel>
+  </Panel>
 </Window>
