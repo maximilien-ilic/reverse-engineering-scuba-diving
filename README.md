@@ -20,6 +20,7 @@ existante, puis en recoder une version à nous, de zéro.
 - `src/MiniDivingLog.Core/` : notre propre code en C# (.NET 10).
   - `Carnet/` : le modèle de données (`Plongee`, `Bloc`).
   - `Calculs/` : Nitrox (MOD, EAD, END) et consommation (SAC).
+  - `Stockage/` : le carnet enregistré dans un fichier SQLite (`CarnetSqlite`).
 - `tests/MiniDivingLog.Tests/` : les tests xUnit.
 
 ## Lancer les tests
