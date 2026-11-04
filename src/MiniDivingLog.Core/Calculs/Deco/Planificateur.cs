@@ -1,10 +1,13 @@
+using MiniDivingLog.Core.Carnet;
+
 namespace MiniDivingLog.Core.Calculs.Deco;
 
 /// <summary>Un palier de décompression.</summary>
 public record Palier(double ProfondeurM, int DureeMin);
 
 /// <summary>Le résultat d'une planification.</summary>
-public record PlanDeco(IReadOnlyList<Palier> Paliers, double DureeTotaleMin)
+/// <param name="Deroulement">Le profil prévu (descente, fond, remontée, paliers), pour le dessiner.</param>
+public record PlanDeco(IReadOnlyList<Palier> Paliers, double DureeTotaleMin, Profil Deroulement)
 {
     public bool SansPalier => Paliers.Count == 0;
 }
@@ -35,6 +38,13 @@ public class Planificateur
         tissus.Segment(0, profondeurM, tempsDescente, gaz);
         tissus.Segment(profondeurM, profondeurM, dureeFondMin - tempsDescente, gaz);
 
+        // On note chaque changement de profondeur pour pouvoir dessiner le plan.
+        var deroulement = new List<PointProfil> { Point(0, 0) };
+        if (tempsDescente > 0)
+            deroulement.Add(Point(tempsDescente, profondeurM));
+        if (dureeFondMin > tempsDescente)
+            deroulement.Add(Point(dureeFondMin, profondeurM));
+
         // Premier palier : le plafond calculé avec le GF bas, arrondi au multiple de 3 m supérieur.
         double premierPalier = ArrondirAuPalier(tissus.Plafond(GfBas));
         var paliers = new List<Palier>();
@@ -59,17 +69,21 @@ public class Planificateur
                         throw new InvalidOperationException("Décompression trop longue pour ce modèle simplifié.");
                 }
                 if (attente > 0)
+                {
                     paliers.Add(new Palier(profondeur, attente));
-                temps += attente;
+                    temps += attente;
+                    deroulement.Add(Point(temps, profondeur));
+                }
             }
 
             double dureeRemontee = (profondeur - cible) / VitesseRemontee;
             tissus.Segment(profondeur, cible, dureeRemontee, gaz);
             temps += dureeRemontee;
             profondeur = cible;
+            deroulement.Add(Point(temps, profondeur));
         }
 
-        return new PlanDeco(paliers, temps);
+        return new PlanDeco(paliers, temps, new Profil(deroulement));
     }
 
     /// <summary>
@@ -96,6 +110,9 @@ public class Planificateur
         }
         return (int)Math.Floor(tempsDescente) + minutes;
     }
+
+    private static PointProfil Point(double minutes, double profondeurM) =>
+        new(TimeSpan.FromMinutes(minutes), profondeurM);
 
     /// <summary>Le GF varie linéairement : GF bas au premier palier, GF haut en surface.</summary>
     private double Gf(double profondeurM, double premierPalierM) =>

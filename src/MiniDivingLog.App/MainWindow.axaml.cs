@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using MiniDivingLog.Core.Calculs;
+using MiniDivingLog.Core.Calculs.Deco;
 using MiniDivingLog.Core.Carnet;
 using MiniDivingLog.Core.Import;
 using MiniDivingLog.Core.Statistiques;
@@ -35,6 +36,7 @@ public partial class MainWindow : Window
         _carnet = new CarnetSqlite(cheminCarnet);
         Closed += (_, _) => _carnet.Dispose();
         Rafraichir();
+        Calculer_Click(null, new RoutedEventArgs());
     }
 
     private void Rafraichir(int? numeroASelectionner = null)
@@ -128,5 +130,64 @@ public partial class MainWindow : Window
         _carnet.Supprimer(p.Numero);
         Message.Text = $"Plongée n°{p.Numero} supprimée";
         Rafraichir();
+    }
+
+    private void Calculer_Click(object? sender, RoutedEventArgs e)
+    {
+        double profondeur = (double)(ChampProfondeur.Value ?? 0);
+        double duree = (double)(ChampDuree.Value ?? 0);
+        var gaz = new Melange((double)(ChampO2.Value ?? 21) / 100, (double)(ChampHe.Value ?? 0) / 100);
+        var planificateur = new Planificateur
+        {
+            GfBas = (double)(ChampGfBas.Value ?? 30) / 100,
+            GfHaut = (double)(ChampGfHaut.Value ?? 70) / 100,
+        };
+
+        if (gaz.FractionN2 < 0)
+        {
+            AfficherErreurPlan("O2 + hélium ne peuvent pas dépasser 100 %.");
+            return;
+        }
+
+        try
+        {
+            PlanDeco plan = planificateur.Planifier(profondeur, duree, gaz);
+            var lignes = new List<string>
+            {
+                $"Gaz : {gaz.FractionO2:P0} O2, {gaz.FractionHe:P0} He",
+                $"Limite sans palier à {profondeur:0} m : {planificateur.LimiteSansPalier(profondeur, gaz)} min",
+                "",
+            };
+
+            // Vérifications Nitrox (étape 1).
+            if (Nitrox.PpO2(gaz.FractionO2, profondeur) > 1.4)
+                lignes.Add($"⚠ PpO2 au fond : {Nitrox.PpO2(gaz.FractionO2, profondeur):0.00} bar, au-delà de 1,4 " +
+                           $"(MOD de ce gaz : {Nitrox.Mod(gaz.FractionO2):0} m)");
+            if (gaz.FractionHe > 0)
+                lignes.Add($"Profondeur narcotique équivalente : {Nitrox.End(gaz.FractionHe, profondeur):0} m");
+
+            if (plan.SansPalier)
+                lignes.Add("Pas de palier obligatoire.");
+            else
+            {
+                lignes.Add("Paliers :");
+                lignes.AddRange(plan.Paliers.Select(p => $"   {p.ProfondeurM,3:0} m   {p.DureeMin,3} min"));
+            }
+            lignes.Add("");
+            lignes.Add($"Durée totale : {plan.DureeTotaleMin:0} min");
+
+            ResultatPlan.Text = string.Join(Environment.NewLine, lignes);
+            ProfilPlan.Profil = plan.Deroulement;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            AfficherErreurPlan(ex.Message);
+        }
+    }
+
+    private void AfficherErreurPlan(string message)
+    {
+        ResultatPlan.Text = $"⚠ {message}";
+        ProfilPlan.Profil = null;
     }
 }

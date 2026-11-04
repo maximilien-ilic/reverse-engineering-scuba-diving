@@ -102,4 +102,18 @@ public class DecoTests
         Assert.False(plan.SansPalier);
         Assert.True(plan.Paliers[0].ProfondeurM > 9);
     }
+
+    [Fact]
+    public void Deroulement_DecritToutLePlan()
+    {
+        var plan = new Planificateur().Planifier(40, 25, Melange.Air);
+        var points = plan.Deroulement.Points;
+
+        Assert.Equal(0, points[0].ProfondeurM);
+        Assert.Equal(0, points[^1].ProfondeurM);
+        Assert.Equal(40, plan.Deroulement.ProfondeurMax);
+        Assert.Equal(plan.DureeTotaleMin, plan.Deroulement.Duree.TotalMinutes, 6);
+        // Le plan respecte lui-même la vitesse de remontée.
+        Assert.Empty(plan.Deroulement.RemonteesRapides());
+    }
 }

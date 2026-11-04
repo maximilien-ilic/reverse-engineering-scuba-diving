@@ -24,7 +24,9 @@ existante, puis en recoder une version à nous, de zéro.
   - `Import/` : lecture des fichiers UDDF exportés par Diving Log, Subsurface…
   - `Stockage/` : le carnet enregistré dans un fichier SQLite (`CarnetSqlite`).
   - `Statistiques/` : records et moyennes du carnet (`StatistiquesCarnet`).
-- `src/MiniDivingLog.App/` : l'interface graphique (Avalonia) : liste des plongées, détails, profil dessiné, import UDDF.
+- `src/MiniDivingLog.App/` : l'interface graphique (Avalonia), avec deux onglets :
+  - Carnet : liste des plongées, détails, profil dessiné, import UDDF ;
+  - Planificateur : paliers de déco, limite sans palier et profil prévu.
 - `tests/MiniDivingLog.Tests/` : les tests xUnit.
 
 > ⚠️ **Projet d'apprentissage.** Les calculs de décompression ne sont pas validés :
