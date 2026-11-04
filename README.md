@@ -54,8 +54,6 @@ On s'inspire du *comportement* observé, sans jamais copier le code ni les resso
 - Planifier une décompression avec l'algorithme Bühlmann ZH-L16C et les facteurs de gradient
 - Afficher l'activité sur 12 mois dans une grille façon GitHub, avec les records du carnet
 
-> ⚠️ **Projet d'apprentissage.** Les calculs de décompression ne sont pas validés :
-> ne jamais s'en servir pour préparer une vraie plongée.
 
 ### Construit avec
 
