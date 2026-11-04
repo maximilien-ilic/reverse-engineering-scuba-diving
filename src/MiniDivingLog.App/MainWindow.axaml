@@ -13,6 +13,8 @@
         <!-- Barre du haut : actions -->
         <Border DockPanel.Dock="Top" Padding="8" Background="#0D47A1">
           <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="Nouvelle plongée…" Click="Nouvelle_Click" />
+            <Button x:Name="BoutonModifier" Content="Modifier…" Click="Modifier_Click" />
             <Button x:Name="BoutonImporter" Content="Importer un fichier UDDF…" Click="Importer_Click" />
             <Button x:Name="BoutonSupprimer" Content="Supprimer la plongée" Click="Supprimer_Click" />
             <TextBlock x:Name="Message" Foreground="White" VerticalAlignment="Center" />
@@ -26,7 +28,8 @@
 
         <Grid ColumnDefinitions="300,*">
           <!-- Liste des plongées -->
-          <ListBox x:Name="ListePlongees" Grid.Column="0" SelectionChanged="Liste_SelectionChanged">
+          <ListBox x:Name="ListePlongees" Grid.Column="0" SelectionChanged="Liste_SelectionChanged"
+                   DoubleTapped="Modifier_Click">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="carnet:Plongee">
                 <StackPanel>

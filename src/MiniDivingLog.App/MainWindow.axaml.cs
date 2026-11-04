@@ -123,6 +123,49 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void Nouvelle_Click(object? sender, RoutedEventArgs e)
+    {
+        var formulaire = new FormulairePlongee(null, _carnet.ProchainNumero())
+        {
+            Enregistreur = p => Enregistrer(() => _carnet.Ajouter(p)),
+        };
+        if (await formulaire.ShowDialog<Plongee?>(this) is Plongee nouvelle)
+        {
+            Message.Text = $"Plongée n°{nouvelle.Numero} ajoutée";
+            Rafraichir(nouvelle.Numero);
+        }
+    }
+
+    private async void Modifier_Click(object? sender, RoutedEventArgs e)
+    {
+        if (ListePlongees.SelectedItem is not Plongee ancienne)
+            return;
+
+        var formulaire = new FormulairePlongee(ancienne, ancienne.Numero)
+        {
+            Enregistreur = p => Enregistrer(() => _carnet.Modifier(ancienne.Numero, p)),
+        };
+        if (await formulaire.ShowDialog<Plongee?>(this) is Plongee modifiee)
+        {
+            Message.Text = $"Plongée n°{modifiee.Numero} modifiée";
+            Rafraichir(modifiee.Numero);
+        }
+    }
+
+    /// <summary>Exécute un enregistrement et traduit l'erreur SQLite « numéro déjà pris » en message lisible.</summary>
+    private static string? Enregistrer(Action action)
+    {
+        try
+        {
+            action();
+            return null;
+        }
+        catch (Microsoft.Data.Sqlite.SqliteException ex) when (ex.SqliteErrorCode == 19) // SQLITE_CONSTRAINT
+        {
+            return "Ce numéro de plongée est déjà utilisé.";
+        }
+    }
+
     private void Supprimer_Click(object? sender, RoutedEventArgs e)
     {
         if (ListePlongees.SelectedItem is not Plongee p)

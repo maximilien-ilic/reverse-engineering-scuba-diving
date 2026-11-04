@@ -25,7 +25,7 @@ existante, puis en recoder une version à nous, de zéro.
   - `Stockage/` : le carnet enregistré dans un fichier SQLite (`CarnetSqlite`).
   - `Statistiques/` : records et moyennes du carnet (`StatistiquesCarnet`).
 - `src/MiniDivingLog.App/` : l'interface graphique (Avalonia), avec deux onglets :
-  - Carnet : liste des plongées, détails, profil dessiné, import UDDF ;
+  - Carnet : liste des plongées, détails, profil dessiné, import UDDF, saisie et modification à la main ;
   - Planificateur : paliers de déco, limite sans palier et profil prévu.
 - `tests/MiniDivingLog.Tests/` : les tests xUnit.
 

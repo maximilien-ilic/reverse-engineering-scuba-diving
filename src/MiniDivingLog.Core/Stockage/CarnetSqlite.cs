@@ -81,15 +81,67 @@ public sealed class CarnetSqlite : IDisposable
         cmd.Parameters.AddWithValue("$commentaires", p.Commentaires);
         long id = (long)cmd.ExecuteScalar()!;
 
-        for (int i = 0; i < p.Blocs.Count; i++)
+        InsererBlocs(id, p.Blocs);
+
+        transaction.Commit();
+    }
+
+    /// <summary>
+    /// Remplace une plongée existante (trouvée par son ancien numéro) par sa nouvelle version.
+    /// Le numéro peut changer ; les blocs sont remplacés, le profil est conservé.
+    /// </summary>
+    public void Modifier(int ancienNumero, Plongee p)
+    {
+        long id = IdDe(ancienNumero) ?? throw new KeyNotFoundException($"Pas de plongée n°{ancienNumero} dans le carnet.");
+        using var transaction = _connexion.BeginTransaction();
+
+        var cmd = _connexion.CreateCommand();
+        cmd.CommandText = """
+            UPDATE Plongees SET Numero = $numero, Date = $date, Lieu = $lieu, DureeMin = $duree,
+                   ProfondeurMaxM = $pmax, ProfondeurMoyM = $pmoy, TemperatureEauC = $temp,
+                   Binome = $binome, Commentaires = $commentaires
+            WHERE Id = $id;
+            """;
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.Parameters.AddWithValue("$numero", p.Numero);
+        cmd.Parameters.AddWithValue("$date", p.Date.ToString("s", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("$lieu", p.Lieu);
+        cmd.Parameters.AddWithValue("$duree", p.DureeMin);
+        cmd.Parameters.AddWithValue("$pmax", p.ProfondeurMaxM);
+        cmd.Parameters.AddWithValue("$pmoy", p.ProfondeurMoyM);
+        cmd.Parameters.AddWithValue("$temp", (object?)p.TemperatureEauC ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$binome", p.Binome);
+        cmd.Parameters.AddWithValue("$commentaires", p.Commentaires);
+        cmd.ExecuteNonQuery();
+
+        var effacer = _connexion.CreateCommand();
+        effacer.CommandText = "DELETE FROM Blocs WHERE PlongeeId = $id;";
+        effacer.Parameters.AddWithValue("$id", id);
+        effacer.ExecuteNonQuery();
+        InsererBlocs(id, p.Blocs);
+
+        transaction.Commit();
+    }
+
+    /// <summary>Le plus grand numéro + 1 : le numéro proposé pour une nouvelle plongée.</summary>
+    public int ProchainNumero()
+    {
+        var cmd = _connexion.CreateCommand();
+        cmd.CommandText = "SELECT COALESCE(MAX(Numero), 0) + 1 FROM Plongees;";
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    private void InsererBlocs(long plongeeId, IReadOnlyList<Bloc> blocs)
+    {
+        for (int i = 0; i < blocs.Count; i++)
         {
-            Bloc b = p.Blocs[i];
+            Bloc b = blocs[i];
             var cmdBloc = _connexion.CreateCommand();
             cmdBloc.CommandText = """
                 INSERT INTO Blocs (PlongeeId, Ordre, VolumeL, PressionDebutBar, PressionFinBar, FractionO2, FractionHe)
                 VALUES ($id, $ordre, $volume, $debut, $fin, $o2, $he);
                 """;
-            cmdBloc.Parameters.AddWithValue("$id", id);
+            cmdBloc.Parameters.AddWithValue("$id", plongeeId);
             cmdBloc.Parameters.AddWithValue("$ordre", i);
             cmdBloc.Parameters.AddWithValue("$volume", b.VolumeL);
             cmdBloc.Parameters.AddWithValue("$debut", b.PressionDebutBar);
@@ -98,8 +150,6 @@ public sealed class CarnetSqlite : IDisposable
             cmdBloc.Parameters.AddWithValue("$he", b.FractionHe);
             cmdBloc.ExecuteNonQuery();
         }
-
-        transaction.Commit();
     }
 
     /// <summary>Toutes les plongées, triées par numéro.</summary>

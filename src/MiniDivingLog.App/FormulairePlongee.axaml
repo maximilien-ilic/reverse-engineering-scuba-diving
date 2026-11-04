@@ -1,0 +1,81 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MiniDivingLog.App.FormulairePlongee"
+        Title="Plongée" Width="660" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" CanResize="False">
+
+  <StackPanel Margin="16" Spacing="12">
+    <StackPanel.Styles>
+      <Style Selector="NumericUpDown">
+        <Setter Property="Width" Value="150" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+      </Style>
+      <Style Selector="TextBlock.etiquette">
+        <Setter Property="VerticalAlignment" Value="Center" />
+      </Style>
+    </StackPanel.Styles>
+
+    <!-- La plongée -->
+    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="6">
+      <TextBlock Classes="etiquette" Grid.Row="0" Text="Numéro" />
+      <NumericUpDown x:Name="ChampNumero" Grid.Row="0" Grid.Column="1" Minimum="1" Maximum="99999" FormatString="0" />
+
+      <TextBlock Classes="etiquette" Grid.Row="1" Text="Date et heure" />
+      <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+        <CalendarDatePicker x:Name="ChampDate" Width="150" />
+        <TimePicker x:Name="ChampHeure" ClockIdentifier="24HourClock" />
+      </StackPanel>
+
+      <TextBlock Classes="etiquette" Grid.Row="2" Text="Lieu" />
+      <TextBox x:Name="ChampLieu" Grid.Row="2" Grid.Column="1" />
+
+      <TextBlock Classes="etiquette" Grid.Row="3" Text="Durée (min)" />
+      <NumericUpDown x:Name="ChampDuree" Grid.Row="3" Grid.Column="1" Minimum="0" Maximum="999" FormatString="0" />
+
+      <TextBlock Classes="etiquette" Grid.Row="4" Text="Profondeur max / moy (m)" />
+      <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+        <NumericUpDown x:Name="ChampProfMax" Minimum="0" Maximum="300" Increment="0.5" FormatString="0.#" />
+        <NumericUpDown x:Name="ChampProfMoy" Minimum="0" Maximum="300" Increment="0.5" FormatString="0.#" />
+      </StackPanel>
+
+      <TextBlock Classes="etiquette" Grid.Row="5" Text="Température eau (°C)" />
+      <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+        <NumericUpDown x:Name="ChampTemperature" Minimum="-2" Maximum="40" FormatString="0.#" />
+        <CheckBox x:Name="CaseTemperature" Content="connue" IsChecked="True" />
+      </StackPanel>
+
+      <TextBlock Classes="etiquette" Grid.Row="6" Text="Binôme" />
+      <TextBox x:Name="ChampBinome" Grid.Row="6" Grid.Column="1" />
+
+      <TextBlock Grid.Row="7" Text="Commentaires" Margin="0,6,0,0" />
+      <TextBox x:Name="ChampCommentaires" Grid.Row="7" Grid.Column="1" AcceptsReturn="True" Height="70" TextWrapping="Wrap" />
+    </Grid>
+
+    <!-- Le bloc -->
+    <CheckBox x:Name="CaseBloc" Content="Bloc" IsChecked="True" FontWeight="Bold" />
+    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6"
+          IsEnabled="{Binding #CaseBloc.IsChecked}">
+      <TextBlock Classes="etiquette" Grid.Row="0" Text="Volume (L)" />
+      <NumericUpDown x:Name="ChampVolume" Grid.Row="0" Grid.Column="1" Minimum="0" Maximum="50" FormatString="0.#" />
+
+      <TextBlock Classes="etiquette" Grid.Row="1" Text="Pression début / fin (bar)" />
+      <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+        <NumericUpDown x:Name="ChampPDebut" Minimum="0" Maximum="350" Increment="10" FormatString="0" />
+        <NumericUpDown x:Name="ChampPFin" Minimum="0" Maximum="350" Increment="10" FormatString="0" />
+      </StackPanel>
+
+      <TextBlock Classes="etiquette" Grid.Row="2" Text="O2 / hélium (%)" />
+      <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+        <NumericUpDown x:Name="ChampO2" Minimum="0" Maximum="100" FormatString="0" />
+        <NumericUpDown x:Name="ChampHe" Minimum="0" Maximum="100" Increment="5" FormatString="0" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Erreurs de validation et boutons -->
+    <TextBlock x:Name="Erreurs" Foreground="#C62828" TextWrapping="Wrap" IsVisible="False" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button Content="Annuler" Click="Annuler_Click" />
+      <Button Content="Enregistrer" Click="Enregistrer_Click" Classes="accent" IsDefault="True" />
+    </StackPanel>
+  </StackPanel>
+</Window>
