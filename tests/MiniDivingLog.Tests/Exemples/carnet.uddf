@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fichier d'exemple écrit à la main pour les tests (format UDDF 3.2). -->
+<uddf xmlns="http://www.streit.cc/uddf/3.2/" version="3.2.0">
+  <generator>
+    <name>MiniDivingLog (exemple de test)</name>
+  </generator>
+  <gasdefinitions>
+    <mix id="air"><name>Air</name><o2>0.21</o2><he>0.0</he></mix>
+    <mix id="ean32"><name>EAN32</name><o2>0.32</o2><he>0.0</he></mix>
+  </gasdefinitions>
+  <divesite>
+    <site id="portcros"><name>Port-Cros</name></site>
+  </divesite>
+  <profiledata>
+    <repetitiongroup id="rg1">
+      <dive id="d1">
+        <informationbeforedive>
+          <link ref="portcros"/>
+          <divenumber>12</divenumber>
+          <datetime>2026-07-14T10:30:00</datetime>
+        </informationbeforedive>
+        <tankdata>
+          <link ref="ean32"/>
+          <tankvolume>0.012</tankvolume>
+          <tankpressurebegin>20000000</tankpressurebegin>
+          <tankpressureend>5000000</tankpressureend>
+        </tankdata>
+        <samples>
+          <waypoint><depth>0</depth><divetime>0</divetime><temperature>294.15</temperature></waypoint>
+          <waypoint><depth>20</depth><divetime>120</divetime><temperature>292.15</temperature></waypoint>
+          <waypoint><depth>20</depth><divetime>1320</divetime></waypoint>
+          <waypoint><depth>0</depth><divetime>1500</divetime><temperature>293.15</temperature></waypoint>
+        </samples>
+        <informationafterdive>
+          <greatestdepth>20</greatestdepth>
+          <diveduration>1500</diveduration>
+          <lowesttemperature>292.15</lowesttemperature>
+          <notes><para>Mérous et posidonies.</para></notes>
+        </informationafterdive>
+      </dive>
+      <dive id="d2">
+        <informationbeforedive>
+          <datetime>2026-07-14T15:00:00</datetime>
+        </informationbeforedive>
+        <tankdata>
+          <link ref="air"/>
+          <tankvolume>0.015</tankvolume>
+          <tankpressurebegin>21000000</tankpressurebegin>
+          <tankpressureend>7000000</tankpressureend>
+        </tankdata>
+        <samples>
+          <waypoint><depth>0</depth><divetime>0</divetime></waypoint>
+          <waypoint><depth>12</depth><divetime>60</divetime></waypoint>
+          <waypoint><depth>12</depth><divetime>1800</divetime></waypoint>
+          <waypoint><depth>0</depth><divetime>1920</divetime></waypoint>
+        </samples>
+      </dive>
+    </repetitiongroup>
+  </profiledata>
+</uddf>
