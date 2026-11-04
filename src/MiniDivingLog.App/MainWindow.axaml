@@ -52,11 +52,6 @@
     <!-- ============ Onglet 2 : le planificateur de déco (étape 4) ============ -->
     <TabItem Header="Planificateur">
       <DockPanel Margin="12">
-        <Border DockPanel.Dock="Top" Background="#FFF3E0" Padding="8" Margin="0,0,0,12" CornerRadius="4">
-          <TextBlock TextWrapping="Wrap" Foreground="#E65100"
-                     Text="⚠ Outil d'apprentissage : ne jamais s'en servir pour préparer une vraie plongée." />
-        </Border>
-
         <!-- Les paramètres de la plongée -->
         <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal">
           <WrapPanel.Styles>
